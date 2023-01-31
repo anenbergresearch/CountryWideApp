@@ -135,13 +135,13 @@ def update_graph(xaxis_column_name, yaxis_column_name,
 
 def create_time_series(means, axis_type, title, axiscol_name):
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x= means.Year, y=means.Minimum, name = 'Minimum', 
+    fig.add_trace(go.Scatter(x= means.Year, y=means.Maximum, name = 'Maximum', 
                              marker = {'color':'lightgray'},line= {'color':'lightgray'},
         showlegend=False))
     fig.add_trace(go.Scatter(x= means.Year, y=means[axiscol_name], name = 'Mean '+axiscol_name, 
                              marker = {'color':'red'},line= {'color':'red'},
         showlegend=False))
-    fig.add_trace(go.Scatter(x= means.Year, y=means.Maximum, name = 'Maximum', 
+    fig.add_trace(go.Scatter(x= means.Year, y=means.Minimum, name = 'Minimum', 
                              marker = {'color':'lightgray'},line= {'color':'lightgray'},
         showlegend=False))
     # px.scatter(means, x= 'Year',y= ['Maximum',axiscol_name,'Minimum'],
