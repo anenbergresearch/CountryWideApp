@@ -6,6 +6,7 @@ from dash import Dash
 from dash.dependencies import Input, Output
 from dash import dcc
 from dash import html
+import plotly.io as pio
 df = pd.read_csv('updated_unified_data.csv')
 c40 = pd.read_excel('cityid-c40_crosswalk.xlsx')
 ID_pop = df[df['Year']==2019][['ID','Population']]
@@ -15,6 +16,9 @@ df = total[['ID','City','c40','Country','continent','Year','Population','NO2','P
 df['CityCountry'] = df.City + ', ' + df.Country + ' (' +df.ID.apply(int).apply(str) +')'
 
 import dash.dependencies
+pio.templates.default = "plotly_white"
+
+
 mean = total.groupby(['Country','Year']).mean(numeric_only=True)[['Population','PM','O3','NO2','Latitude','Longitude']].round(decimals= 2)
 mean.Population = mean.Population.round(decimals=-3)
 mean = mean.reset_index()
@@ -31,13 +35,29 @@ pd.options.plotting.backend = "plotly"
 
 app = Dash(__name__)#, external_stylesheets=external_stylesheets)
 server=app.server
-
+colors = {
+    'background': 'white',
+    'text': '#468570'
+}
 
 
 available_indicators = ['O3','PM','NO2']
 
 app.layout = html.Div([
     html.Div([
+        html.Div(style={'backgroundColor': colors['background']}, children=[
+            html.H1(
+                children='13,000 Cities',
+                style={
+                    'textAlign': 'center',
+                    'color': 'black'
+                }
+            ),
+
+            html.Div(children='Exploring Countrywide Trends', style={
+                'textAlign': 'center',
+                'color': 'lightgray'
+            })]),
 
         html.Div([
             dcc.Dropdown(
@@ -68,8 +88,8 @@ app.layout = html.Div([
             )
         ], style={'width': '49%', 'float': 'right', 'display': 'inline-block'})
     ], style={
-        'borderBottom': 'thin lightgrey solid',
-        'backgroundColor': 'rgb(250, 250, 250)',
+        'borderBottom': 'white',
+        'backgroundColor': 'white',
         'padding': '10px 5px'
     }),
     
@@ -92,7 +112,7 @@ app.layout = html.Div([
         value=df['Year'].max(),
         marks={str(year): str(year) for year in df['Year'].unique()},
         step=None
-    ), style={'width': '49%', 'padding': '0px 20px 20px 20px'})
+    ), style={'width': '95%', 'padding': '0px 20px 20px 20px'})
 ])
 
 @app.callback(
@@ -114,7 +134,7 @@ def update_graph(xaxis_column_name, yaxis_column_name,
     
     fig = px.scatter_geo(m, lat= m.Latitude, lon=m.Longitude,
             hover_name='Country',
-            color = yaxis_column_name)
+            color = yaxis_column_name, hover_data={'Latitude':False,'Longitude':False}, color_continuous_scale='OrRd')
 
     #fig.update_layout(legend=dict(groupclick="toggleitem"))
 
@@ -139,7 +159,7 @@ def create_time_series(means, axis_type, title, axiscol_name):
                              marker = {'color':'lightgray'},line= {'color':'lightgray'},
         showlegend=False))
     fig.add_trace(go.Scatter(x= means.Year, y=means[axiscol_name], name = 'Mean '+axiscol_name, 
-                             marker = {'color':'red'},line= {'color':'red'},
+                             marker = {'color':'#4CB391'},line= {'color':'#4CB391'},
         showlegend=False))
     fig.add_trace(go.Scatter(x= means.Year, y=means.Minimum, name = 'Minimum', 
                              marker = {'color':'lightgray'},line= {'color':'lightgray'},
@@ -149,7 +169,7 @@ def create_time_series(means, axis_type, title, axiscol_name):
 
     fig.update_traces(mode='lines+markers')
     fig.update_layout(hovermode="x unified")
-    fig.update_xaxes(showgrid=False)
+    #fig.update_xaxes(showgrid=False)
 
     fig.update_yaxes(type='linear' if axis_type == 'Linear' else 'log')
 
@@ -176,7 +196,8 @@ def update_y_timeseries(hoverData, yaxis_column_name, xaxis_type,yaxis_type,year
             y=yaxis_column_name,
             hover_name='CityCountry',
             color = 'c40',
-            opacity = 0.4
+            opacity = 0.4,
+            color_discrete_sequence = ['#4CB391']
             )    
     fig.update_xaxes(title='Population', type='linear' if xaxis_type == 'Linear' else 'log')
 
