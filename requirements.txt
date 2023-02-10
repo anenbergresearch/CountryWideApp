@@ -1,6 +1,7 @@
-dash==2.8.0
+dash
 numpy
 pandas
 plotly
 gunicorn
 openpyxl
+country_converter
